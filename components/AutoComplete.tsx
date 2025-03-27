@@ -1,10 +1,21 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Loader from './elements/Loader';
 import Input from './Input';
 import DropDown from './DropDown';
 import SelectedCountries from './SelectedCountries';
 
+/* eslint-disable  */
+const debounce = <T extends (...args: any[]) => any>(
+  func: T,
+  delay: number
+) => {
+  let timer: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => func(...args), delay);
+  };
+};
 const AutoComplete = () => {
   const [value, setValue] = useState('');
   const [loading, setLoading] = useState(false);
@@ -69,6 +80,24 @@ const AutoComplete = () => {
   useEffect(() => {
     fetchCountries();
   }, []);
+
+  const debouncedFilter = useCallback(
+    debounce((searchTerm: string) => {
+      if (searchTerm.trim() === '') {
+        setFilteredCountries([]);
+        return;
+      }
+      const filtered = countries.filter((country) =>
+        country.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredCountries(filtered);
+    }, 300),
+    [countries]
+  );
+
+  useEffect(() => {
+    debouncedFilter(value);
+  }, [value, debouncedFilter]);
 
   return (
     <div className='my-10 flex items-center justify-center h-full'>
