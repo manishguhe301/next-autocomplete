@@ -75,7 +75,7 @@ const AutoComplete = () => {
           <Loader />
         </div>
       ) : (
-        <div className='flex flex-col items-center justify-center'>
+        <div className='flex flex-col items-center justify-center w-full max-w-lg'>
           <input
             value={value}
             onKeyDown={handleKeyDown}
@@ -93,77 +93,69 @@ const AutoComplete = () => {
             }}
             onChange={(e) => setValue(e.target.value)}
             placeholder='Search countries by name...'
-            className='border-2 border-gray-300 rounded-md p-2 w-64 focus:outline-none focus:border-gray-400'
+            className='border border-gray-300 rounded-lg px-4 py-2 w-72 focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900 placeholder-gray-500 shadow-sm'
             role='combobox'
-            aria-expanded={focused}
+            aria-expanded={filteredCountries.length > 0 && focused}
             aria-controls='country-list'
           />
-          <div>
-            {value && (
-              <div
-                className='mt-4 h-[200px] w-64 overflow-y-auto'
-                id='country-list'
-                role='listbox'
-              >
-                {filteredCountries.length > 0 ? (
-                  filteredCountries.map((country, index) => (
-                    <p
-                      id={`country-${index}`}
-                      key={index}
-                      aria-selected={selectedCountries.includes(country)}
-                      className={`cursor-pointer ${
+
+          {value && (
+            <div
+              className='mt-3 max-h-48 w-72 overflow-y-auto border border-gray-300 rounded-lg shadow-md bg-white'
+              id='country-list'
+              role='listbox'
+            >
+              {filteredCountries.length > 0 ? (
+                filteredCountries.map((country, index) => (
+                  <p
+                    id={`country-${index}`}
+                    key={index}
+                    aria-selected={selectedCountries.includes(country)}
+                    className={`px-4 py-2 cursor-pointer transition-all ${
+                      selectedCountries.includes(country)
+                        ? 'font-semibold text-gray-900 bg-gray-200'
+                        : highlightedIndex === index
+                        ? 'bg-gray-100'
+                        : 'text-gray-700'
+                    } hover:bg-gray-100`}
+                    onClick={() => {
+                      setSelectedCountries(
                         selectedCountries.includes(country)
-                          ? 'font-semibold text-gray-900 bg-gray-200 border border-white'
-                          : highlightedIndex === index
-                          ? 'bg-gray-100'
-                          : 'text-gray-700'
-                      }`}
-                      onClick={() => {
-                        setSelectedCountries(
-                          selectedCountries.includes(country)
-                            ? selectedCountries.filter((c) => c !== country)
-                            : [...selectedCountries, country]
-                        );
-                        setHighlightedIndex(null);
-                        setValue('');
-                      }}
-                    >
-                      {country}
-                    </p>
-                  ))
-                ) : (
-                  <p className='text-gray-700' role='alert'>
-                    No results
+                          ? selectedCountries.filter((c) => c !== country)
+                          : [...selectedCountries, country]
+                      );
+                      setValue('');
+                    }}
+                  >
+                    {country}
                   </p>
-                )}
-              </div>
-            )}
-          </div>
-          <div className='mt-4'>
-            {' '}
-            {selectedCountries?.length > 0 && (
-              <div className='flex items-center justify-center gap-2 max-w-xl flex-wrap'>
-                {selectedCountries.map((country) => {
-                  return (
-                    <p
-                      className='text-gray-700 flex items-center gap-1'
-                      key={country}
-                    >
-                      {country}{' '}
-                      <IoClose
-                        onClick={() => {
-                          setSelectedCountries(
-                            selectedCountries.filter((c) => c !== country)
-                          );
-                        }}
-                        className='cursor-pointer'
-                      />
-                    </p>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                ))
+              ) : (
+                <p className='text-gray-500 px-4 py-2'>No results</p>
+              )}
+            </div>
+          )}
+
+          {selectedCountries.length > 0 && (
+            <div className='mt-4 flex flex-wrap justify-center gap-2 w-lg'>
+              {selectedCountries.map((country) => (
+                <div
+                  className='flex items-center bg-gray-200 text-gray-900 px-3 py-1 rounded-full text-sm'
+                  key={country}
+                >
+                  {country}
+                  <IoClose
+                    className='ml-2 cursor-pointer text-gray-600 hover:text-gray-900'
+                    onClick={() => {
+                      setSelectedCountries(
+                        selectedCountries.filter((c) => c !== country)
+                      );
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
