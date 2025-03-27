@@ -54,21 +54,18 @@ const AutoComplete = () => {
                     .map((country, index) => (
                       <p
                         key={index}
-                        className='text-gray-700 cursor-pointer'
-                        onClick={() => {
-                          const isSelected =
-                            selectedCountries.includes(country);
-                          if (isSelected) {
-                            setSelectedCountries(
-                              selectedCountries.filter((c) => c !== country)
-                            );
-                          } else {
-                            setSelectedCountries([
-                              ...selectedCountries,
-                              country,
-                            ]);
-                          }
-                        }}
+                        className={`cursor-pointer ${
+                          selectedCountries.includes(country)
+                            ? 'font-semibold text-gray-900 bg-gray-200 border border-white'
+                            : 'text-gray-700'
+                        }`}
+                        onClick={() =>
+                          setSelectedCountries(
+                            selectedCountries.includes(country)
+                              ? selectedCountries.filter((c) => c !== country)
+                              : [...selectedCountries, country]
+                          )
+                        }
                       >
                         {country}
                       </p>
