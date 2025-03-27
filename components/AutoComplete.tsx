@@ -1,7 +1,9 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import Loader from './elements/Loader';
-import { IoClose } from 'react-icons/io5';
+import Input from './Input';
+import DropDown from './DropDown';
+import SelectedCountries from './SelectedCountries';
 
 const AutoComplete = () => {
   const [value, setValue] = useState('');
@@ -76,85 +78,32 @@ const AutoComplete = () => {
         </div>
       ) : (
         <div className='flex flex-col items-center justify-center w-full max-w-lg'>
-          <input
+          <Input
+            handleKeyDown={handleKeyDown}
             value={value}
-            onKeyDown={handleKeyDown}
-            onFocus={() => {
-              setFilteredCountries(
-                countries.filter((c) =>
-                  c.toLowerCase().includes(value.toLowerCase())
-                )
-              );
-              setFocused(true);
-            }}
-            onBlur={() => {
-              setTimeout(() => setFilteredCountries([]), 200);
-              setFocused(false);
-            }}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder='Search countries by name...'
-            className='border border-gray-300 rounded-lg px-4 py-2 w-72 focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900 placeholder-gray-500 shadow-sm'
-            role='combobox'
-            aria-expanded={filteredCountries.length > 0 && focused}
-            aria-controls='country-list'
+            setValue={setValue}
+            setFilteredCountries={setFilteredCountries}
+            countries={countries}
+            setFocused={setFocused}
+            filteredCountries={filteredCountries}
+            focused={focused}
           />
 
           {value && (
-            <div
-              className='mt-3 max-h-48 w-72 overflow-y-auto border border-gray-300 rounded-lg shadow-md bg-white'
-              id='country-list'
-              role='listbox'
-            >
-              {filteredCountries.length > 0 ? (
-                filteredCountries.map((country, index) => (
-                  <p
-                    id={`country-${index}`}
-                    key={index}
-                    aria-selected={selectedCountries.includes(country)}
-                    className={`px-4 py-2 cursor-pointer transition-all ${
-                      selectedCountries.includes(country)
-                        ? 'font-semibold text-gray-900 bg-gray-200'
-                        : highlightedIndex === index
-                        ? 'bg-gray-100'
-                        : 'text-gray-700'
-                    } hover:bg-gray-100`}
-                    onClick={() => {
-                      setSelectedCountries(
-                        selectedCountries.includes(country)
-                          ? selectedCountries.filter((c) => c !== country)
-                          : [...selectedCountries, country]
-                      );
-                      setValue('');
-                    }}
-                  >
-                    {country}
-                  </p>
-                ))
-              ) : (
-                <p className='text-gray-500 px-4 py-2'>No results</p>
-              )}
-            </div>
+            <DropDown
+              filteredCountries={filteredCountries}
+              setValue={setValue}
+              selectedCountries={selectedCountries}
+              setSelectedCountries={setSelectedCountries}
+              highlightedIndex={highlightedIndex}
+            />
           )}
 
           {selectedCountries.length > 0 && (
-            <div className='mt-4 flex flex-wrap justify-center gap-2 w-lg'>
-              {selectedCountries.map((country) => (
-                <div
-                  className='flex items-center bg-gray-200 text-gray-900 px-3 py-1 rounded-full text-sm'
-                  key={country}
-                >
-                  {country}
-                  <IoClose
-                    className='ml-2 cursor-pointer text-gray-600 hover:text-gray-900'
-                    onClick={() => {
-                      setSelectedCountries(
-                        selectedCountries.filter((c) => c !== country)
-                      );
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
+            <SelectedCountries
+              selectedCountries={selectedCountries}
+              setSelectedCountries={setSelectedCountries}
+            />
           )}
         </div>
       )}
