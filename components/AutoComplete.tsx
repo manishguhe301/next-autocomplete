@@ -8,6 +8,47 @@ const AutoComplete = () => {
   const [loading, setLoading] = useState(false);
   const [countries, setCountries] = useState<string[]>([]);
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
+  const [filteredCountries, setFilteredCountries] = useState<string[]>([]);
+  const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
+  const [focused, setFocused] = useState(false);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const filteredCountries = countries.filter((country) =>
+      country.toLowerCase().includes(value.toLowerCase())
+    );
+    setFilteredCountries(filteredCountries);
+
+    if (filteredCountries.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      setHighlightedIndex((prev) => {
+        const newIndex =
+          prev === null || prev === filteredCountries.length - 1 ? 0 : prev + 1;
+        document
+          .getElementById(`country-${newIndex}`)
+          ?.scrollIntoView({ block: 'nearest' });
+        return newIndex;
+      });
+    } else if (e.key === 'ArrowUp') {
+      setHighlightedIndex((prev) => {
+        const newIndex =
+          prev === null || prev === 0 ? filteredCountries.length - 1 : prev - 1;
+        document
+          .getElementById(`country-${newIndex}`)
+          ?.scrollIntoView({ block: 'nearest' });
+        return newIndex;
+      });
+    } else if (e.key === 'Enter' && highlightedIndex !== null) {
+      const selectedCountry = filteredCountries[highlightedIndex];
+      setSelectedCountries((prev) =>
+        prev.includes(selectedCountry)
+          ? prev.filter((c) => c !== selectedCountry)
+          : [...prev, selectedCountry]
+      );
+      setHighlightedIndex(null);
+      setValue('');
+    }
+  };
 
   const fetchCountries = async () => {
     setLoading(true);
@@ -37,41 +78,63 @@ const AutoComplete = () => {
         <div className='flex flex-col items-center justify-center'>
           <input
             value={value}
+            onKeyDown={handleKeyDown}
+            onFocus={() => {
+              setFilteredCountries(
+                countries.filter((c) =>
+                  c.toLowerCase().includes(value.toLowerCase())
+                )
+              );
+              setFocused(true);
+            }}
+            onBlur={() => {
+              setTimeout(() => setFilteredCountries([]), 200);
+              setFocused(false);
+            }}
             onChange={(e) => setValue(e.target.value)}
             placeholder='Search countries by name...'
             className='border-2 border-gray-300 rounded-md p-2 w-64 focus:outline-none focus:border-gray-400'
+            role='combobox'
+            aria-expanded={focused}
+            aria-controls='country-list'
           />
           <div>
             {value && (
-              <div className='mt-4 h-[200px] w-64 overflow-y-auto'>
-                {countries.filter((country) =>
-                  country.toLowerCase().includes(value.toLowerCase())
-                ).length > 0 ? (
-                  countries
-                    .filter((country) =>
-                      country.toLowerCase().includes(value.toLowerCase())
-                    )
-                    .map((country, index) => (
-                      <p
-                        key={index}
-                        className={`cursor-pointer ${
+              <div
+                className='mt-4 h-[200px] w-64 overflow-y-auto'
+                id='country-list'
+                role='listbox'
+              >
+                {filteredCountries.length > 0 ? (
+                  filteredCountries.map((country, index) => (
+                    <p
+                      id={`country-${index}`}
+                      key={index}
+                      aria-selected={selectedCountries.includes(country)}
+                      className={`cursor-pointer ${
+                        selectedCountries.includes(country)
+                          ? 'font-semibold text-gray-900 bg-gray-200 border border-white'
+                          : highlightedIndex === index
+                          ? 'bg-gray-100'
+                          : 'text-gray-700'
+                      }`}
+                      onClick={() => {
+                        setSelectedCountries(
                           selectedCountries.includes(country)
-                            ? 'font-semibold text-gray-900 bg-gray-200 border border-white'
-                            : 'text-gray-700'
-                        }`}
-                        onClick={() =>
-                          setSelectedCountries(
-                            selectedCountries.includes(country)
-                              ? selectedCountries.filter((c) => c !== country)
-                              : [...selectedCountries, country]
-                          )
-                        }
-                      >
-                        {country}
-                      </p>
-                    ))
+                            ? selectedCountries.filter((c) => c !== country)
+                            : [...selectedCountries, country]
+                        );
+                        setHighlightedIndex(null);
+                        setValue('');
+                      }}
+                    >
+                      {country}
+                    </p>
+                  ))
                 ) : (
-                  <p className='text-gray-700'>No results</p>
+                  <p className='text-gray-700' role='alert'>
+                    No results
+                  </p>
                 )}
               </div>
             )}
